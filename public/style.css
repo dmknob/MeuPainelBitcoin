@@ -1,0 +1,172 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    margin: 20px;
+    background-color: #f0f2f5;
+    color: #1c1e21;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+h1 {
+    text-align: center;
+    color: #ff9900;
+    margin-bottom: 30px;
+    font-size: 2.5em;
+}
+
+.indicador {
+    background-color: #ffffff;
+    border: 1px solid #dddfe2;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    width: 90%;
+    max-width: 500px;
+    transition: transform 0.2s ease-in-out;
+}
+
+.indicador:hover {
+    transform: translateY(-3px);
+}
+
+.indicador h2 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.fonte-api {
+    font-size: 0.7em;
+    font-weight: normal;
+    background-color: #e9ecef;
+    color: #495057;
+    padding: 3px 6px;
+    border-radius: 4px;
+}
+
+.indicador p {
+    font-size: 1.6em;
+    font-weight: 600;
+    color: #007bff;
+    margin-bottom: 5px;
+    margin-top: 5px;
+}
+
+#usdtbrl-price {
+    color: #17a2b8; /* Cor Ciano para a cotação do dólar */
+}
+
+#fear-greed-value {
+    font-size: 2em;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+#fear-greed-classification {
+    font-size: 1.2em;
+    font-style: italic;
+    color: #555;
+    margin-bottom: 10px;
+}
+
+.sub-indicador {
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px dashed #eaeaea;
+}
+
+.sub-indicador:first-of-type {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+}
+
+.sub-indicador h3 {
+    font-size: 1em;
+    color: #444;
+    margin-bottom: 8px;
+}
+
+.sub-indicador p {
+    font-size: 1.2em;
+    font-weight: normal;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.sub-indicador p strong {
+    color: #007bff;
+    font-weight: 600;
+}
+
+.sub-indicador span,
+#mempool-block-height,
+#mempool-tx-count {
+    font-weight: bold;
+    color: #28a745; /* Verde para os valores do mempool */
+}
+
+#mempool-block-height,
+#mempool-tx-count {
+    font-size: 1.5em;
+}
+
+* Estilos para a Calculadora Sats */
+.calculadora-sats-input-group {
+    margin-bottom: 15px;
+}
+
+.calculadora-sats-input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #555;
+}
+
+#sats-input {
+    width: calc(100% - 22px); /* Ajusta para padding e borda */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1em;
+}
+
+.calculadora-sats-resultado p {
+    font-size: 1.2em; /* Tamanho da fonte para os resultados da calculadora */
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.calculadora-sats-resultado strong {
+    color: #007bff; /* Cor azul para os valores convertidos */
+    font-weight: 600;
+}
+
+#sats-to-brl, #sats-to-usd {
+    color: #28a745; /* Verde para os valores, como no mempool */
+}
+
+.fng-update-note {
+    font-size: 0.8em !important;
+    color: #777 !important;
+    font-weight: normal !important;
+    text-align: right;
+    margin-top: 10px;
+}
+
+@media (max-width: 600px) {
+    body { margin: 10px; }
+    h1 { font-size: 2em; }
+    .indicador { padding: 15px; width: 95%; }
+    .indicador p { font-size: 1.4em; }
+    #fear-greed-value { font-size: 1.8em; }
+    #fear-greed-classification { font-size: 1.1em; }
+}
