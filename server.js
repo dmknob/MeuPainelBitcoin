@@ -2,7 +2,7 @@
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
-require('dotenv').config(); // Carrega variáveis do .env
+require('dotenv').config();
 
 // 2. Inicializar o aplicativo Express
 const app = express();
@@ -17,44 +17,40 @@ app.get('/api/data', async (req, res) => {
     const timestamp = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
     console.log(`[${timestamp}] Recebida requisição para /api/data`);
 
-    const binanceSymbols = JSON.stringify(["BTCUSDT", "BTCBRL", "USDTBRL"]);
     const coingeckoApiKey = process.env.COINGECKO_API_KEY;
-
 
     try {
         const promises = [
-            axios.get(`https://api.binance.com/api/v3/ticker/price?symbols=${encodeURIComponent(binanceSymbols)}`),
+            // SUBSTITUINDO A CHAMADA DA BINANCE PELA DA COINGECKO PARA PREÇOS
+            axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,tether&vs_currencies=usd,brl&x_cg_demo_api_key=${coingeckoApiKey}`),
             axios.get(`https://api.coingecko.com/api/v3/coins/bitcoin?localization=false&tickers=false&market_data=true&x_cg_demo_api_key=${coingeckoApiKey}`),
             axios.get(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=199&interval=daily&x_cg_demo_api_key=${coingeckoApiKey}`),
             axios.get('https://api.alternative.me/fng/?limit=1&format=json'),
             axios.get('https://mempool.space/api/v1/fees/recommended'),
             axios.get('https://mempool.space/api/blocks/tip/height'),
             axios.get('https://mempool.space/api/mempool')
-
         ];
 
         const results = await Promise.all(promises);
         
         const [
-            binancePrices,
+            coinGeckoPrices, // <<<--- Antigo 'binancePrices'
             coinGeckoGeneralData,
             coinGeckoHistoricalData,
             fearGreedRawData,
             mempoolFeesData,
             mempoolBlockHeightData,
             mempoolStatsData
-            // A variável para os dados da ExchangeRate-API foi REMOVIDA daqui
         ] = results.map(result => result.data ? result.data : result); 
 
         res.json({
-            binancePrices,
+            coinGeckoPrices, // <<<--- Enviando os preços da CoinGecko
             coinGeckoGeneralData,
             coinGeckoHistoricalData,
             fearGreedRawData,
             mempoolFeesData,
             mempoolBlockHeightData,
             mempoolStatsData
-            // A propriedade pygToBrlRate foi REMOVIDA do objeto de resposta
         });
 
     } catch (error) {

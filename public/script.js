@@ -1,4 +1,4 @@
-// IDs dos Elementos HTML existentes
+// IDs dos Elementos HTML (sem alterações)
 const precoBrlElement = document.getElementById('bitcoin-preco-brl');
 const precoUsdElement = document.getElementById('bitcoin-preco-usd');
 const usdtBrlPriceElement = document.getElementById('usdtbrl-price');
@@ -21,7 +21,6 @@ const satsToUsdElement = document.getElementById('sats-to-usd');
 // Variáveis globais
 let currentBitcoinPriceUSD = 0;
 let currentBitcoinPriceBRL = 0;
-// A variável currentPygToBrlRate foi REMOVIDA
 
 const SATS_PER_BTC = 100000000;
 
@@ -31,22 +30,18 @@ async function fetchAllData() {
         if (!response.ok) {
             throw new Error(`Erro ao buscar dados do servidor: ${response.statusText}`);
         }
+
         const data = await response.json();
 
-        // --- 1. Processa Preços da Binance ---
-        const btcUsdtData = data.binancePrices.find(p => p.symbol === 'BTCUSDT');
-        const btcBrlData = data.binancePrices.find(p => p.symbol === 'BTCBRL');
-        const usdtBrlData = data.binancePrices.find(p => p.symbol === 'USDTBRL');
-        
-        currentBitcoinPriceUSD = btcUsdtData ? parseFloat(btcUsdtData.price) : 0;
-        currentBitcoinPriceBRL = btcBrlData ? parseFloat(btcBrlData.price) : 0;
-        const precoUsdtBrl = usdtBrlData ? parseFloat(usdtBrlData.price) : 0;
+        // --- 1. Processa Preços da CoinGecko (LÓGICA ATUALIZADA) ---
+        // Acesso direto aos dados da CoinGecko
+        currentBitcoinPriceUSD = data.coinGeckoPrices?.bitcoin?.usd || 0;
+        currentBitcoinPriceBRL = data.coinGeckoPrices?.bitcoin?.brl || 0;
+        const precoUsdtBrl = data.coinGeckoPrices?.tether?.brl || 0;
         
         precoBrlElement.textContent = `R$ ${currentBitcoinPriceBRL.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         precoUsdElement.textContent = `$ ${currentBitcoinPriceUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         usdtBrlPriceElement.textContent = `R$ ${precoUsdtBrl.toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 })}`;
-
-        // O bloco para processar a taxa PYG/BRL foi REMOVIDO
         
         // --- 2. Processa Dados Gerais da CoinGecko ---
         marketCapUsdElement.textContent = `$ ${data.coinGeckoGeneralData.market_data.market_cap.usd.toLocaleString('en-US')}`;
@@ -82,7 +77,7 @@ async function fetchAllData() {
     }
 }
 
-// Função da Calculadora Sats
+// Função da Calculadora Sats (sem alterações)
 function calculateSatsConversion() {
     if (!satsInputElement || !satsToBrlElement || !satsToUsdElement) return;
 
@@ -101,6 +96,7 @@ function calculateSatsConversion() {
     satsToBrlElement.textContent = `R$ ${valueInBRL.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 8 })}`;
     satsToUsdElement.textContent = `$ ${valueInUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 8 })}`;
 }
+
 
 // Inicia as atualizações e configura as calculadoras
 document.addEventListener('DOMContentLoaded', () => {
