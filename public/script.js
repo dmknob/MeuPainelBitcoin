@@ -31,13 +31,10 @@ const JITTER_MS = 30000; // Variação aleatória de até 30 segundos
 // --- LÓGICA DO MODO ESCURO ---
 const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
 const currentTheme = localStorage.getItem('theme');
-
-// Lógica explícita para definir o estado inicial
 if (currentTheme === 'dark') {
     document.body.classList.add('dark-mode');
     if (toggleSwitch) toggleSwitch.checked = true;
 } else {
-    // Garante que, se não houver tema salvo ou se for 'light', tudo comece no modo claro.
     document.body.classList.remove('dark-mode');
     if (toggleSwitch) toggleSwitch.checked = false;
 }
@@ -49,7 +46,7 @@ function switchTheme(e) {
     } else {
         document.body.classList.remove('dark-mode');
         localStorage.setItem('theme', 'light');
-    }    
+    }
 }
 if (toggleSwitch) toggleSwitch.addEventListener('change', switchTheme, false);
 
@@ -59,7 +56,8 @@ function renderData(data) {
     if (!data) return;
 
     if (data.lastUpdateTimestamp) {
-        lastUpdateTimeElement.textContent = new Date(data.lastUpdateTimestamp).toLocaleTimeString('pt-BR');
+        const updateTime = new Date(data.lastUpdateTimestamp);
+        lastUpdateTimeElement.textContent = updateTime.toLocaleTimeString('pt-BR');
     } else {
         lastUpdateTimeElement.textContent = "Aguardando...";
     }
@@ -67,11 +65,11 @@ function renderData(data) {
     currentBitcoinPriceUSD = data.prices?.btc_usd || 0;
     currentBitcoinPriceBRL = data.prices?.btc_brl || 0;
     const precoUsdtBrl = data.prices?.usdt_brl || 0;
-    
+
     precoBrlElement.textContent = `R$ ${currentBitcoinPriceBRL.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     precoUsdElement.textContent = `$ ${currentBitcoinPriceUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     usdtBrlPriceElement.textContent = `R$ ${precoUsdtBrl.toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 })}`;
-    
+
     marketCapUsdElement.textContent = `$ ${data.globalMetrics?.market_cap_usd?.toLocaleString('en-US', {maximumFractionDigits: 0}) || 'N/D'}`;
     mayerMultipleElement.textContent = data.globalMetrics?.mayer_multiple?.toFixed(2) || 'N/D';
 
@@ -89,7 +87,7 @@ function renderData(data) {
     blockHeightElement.textContent = data.mempool?.block_height?.toLocaleString('pt-BR') || 'N/D';
     totalBtcSupplyElement.textContent = data.mempool?.calculated_supply?.toLocaleString('pt-BR', {maximumFractionDigits: 0}) || 'N/D';
     mempoolTxCountElement.textContent = data.mempool?.tx_count?.toLocaleString('pt-BR') || 'N/D';
-    
+
     if (satsInputElement && satsInputElement.value) calculateSatsConversion();
 }
 
@@ -97,7 +95,7 @@ function renderData(data) {
 async function fetchAllData() {
     console.log("Buscando dados atualizados do servidor...");
     try {
-        const response = await fetch('/api/data'); 
+        const response = await fetch(`/api/data?t=${Date.now()}`);
         if (!response.ok) {
             throw new Error(`Servidor não está pronto ou respondeu com erro: ${response.status}`);
         }
@@ -161,9 +159,9 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {
         console.error("Não foi possível ler os dados do cache:", e);
     }
-    fetchAllData(); 
+    fetchAllData();
     if (satsInputElement) {
         satsInputElement.addEventListener('input', calculateSatsConversion);
-        calculateSatsConversion(); 
+        calculateSatsConversion();
     }
 });

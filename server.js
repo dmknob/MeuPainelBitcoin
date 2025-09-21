@@ -1,3 +1,4 @@
+// 1. Importar as bibliotecas
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
@@ -6,9 +7,12 @@ const sqlite3 = require('sqlite3');
 const { open } = require('sqlite');
 require('dotenv').config();
 
+// Variáveis globais
 let db;
 let initialDataLoadPromise = null;
+const UPDATE_INTERVAL_MS = 600000; // 10 minutos em milissegundos
 
+// --- 2. CONFIGURAÇÃO DO BANCO DE DADOS ---
 async function initializeDatabase() {
     try {
         db = await open({
@@ -55,6 +59,8 @@ async function initializeDatabase() {
     }
 }
 
+// --- 3. WORKERS ---
+
 async function updateFearGreedData() {
     const timestampLog = new Date().toLocaleString('pt-BR');
     try {
@@ -77,6 +83,10 @@ async function updateHighFrequencyData() {
     const timestampLog = new Date().toLocaleString('pt-BR');
     console.log(`[${timestampLog}] Worker: Buscando dados de alta frequência (Preços, Mempool)...`);
     const coingeckoApiKey = process.env.COINGECKO_API_KEY;
+    if (!coingeckoApiKey || coingeckoApiKey === 'SUA_API_KEY_AQUI') {
+        console.error(`[${timestampLog}] Worker: ERRO CRÍTICO - A chave COINGECKO_API_KEY não está definida no arquivo .env do servidor.`);
+        return;
+    }
     try {
         const [
             pricesResponse,
@@ -107,9 +117,12 @@ async function updateHighFrequencyData() {
         const blockHeight = blockHeightResponse.data;
         const totalSupply = calculateBitcoinSupply(blockHeight);
 
-        await db.run(
-            `INSERT OR REPLACE INTO mempool_snapshot (id, fastest_fee, half_hour_fee, hour_fee, block_height, tx_count, calculated_supply, last_updated) VALUES (1, ?, ?, ?, ?, ?, ?, ?)`,
-            [feesResponse.data.fastestFee, feesResponse.data.halfHourFee, feesResponse.data.hourFee, blockHeight, mempoolStatsResponse.data.count, totalSupply, currentTime]
+        await db.run('INSERT OR REPLACE INTO mempool_snapshot (id, fastest_fee, half_hour_fee, hour_fee, block_height, tx_count, calculated_supply, last_updated) VALUES (1, ?, ?, ?, ?, ?, ?, ?)',
+            [
+                feesResponse.data.fastestFee, feesResponse.data.halfHourFee,
+                feesResponse.data.hourFee, blockHeight,
+                mempoolStatsResponse.data.count, totalSupply, currentTime
+            ]
         );
 
         const marketCap = btcPriceUSD * totalSupply;
@@ -157,7 +170,7 @@ async function updateLatestDailyData() {
             const price = yesterdayData[1];
             const result = await db.run('INSERT OR IGNORE INTO btc_daily_close_prices (date, price_usd) VALUES (?, ?)', [date, price]);
             if (result.changes > 0) {
-                console.log(`[${timestampLog}] Worker (Diário): Adicionado novo preço de fechamento para a data ${date}.`);
+                console.log(`[${timestampLog}] Worker (Diário): Adicionado novo preço para ${date}.`);
             } else {
                 console.log(`[${timestampLog}] Worker (Diário): Preço para ${date} já estava atualizado.`);
             }
@@ -178,22 +191,24 @@ function calculateBitcoinSupply(blockHeight) {
         reward /= 2;
         blocksRemaining -= blocksInEpoch;
     }
-    //Genesys block
     supply += 50;
     return supply;
 }
 
-
-function scheduleHighFrequencyWorker() { cron.schedule('*/10 * * * *', updateHighFrequencyData); }
+// --- 4. AGENDADORES ---
+function scheduleHighFrequencyWorker() {
+    cron.schedule('*/10 * * * *', updateHighFrequencyData);
+}
 function scheduleDailyWorker() {
     cron.schedule('15 0 * * *', () => {
-        const timestamp = new Date().toLocaleString('pt-BR'); console.log(`[${timestamp}] SCHEDULE: Disparando Worker Diário...`);
+        const timestamp = new Date().toLocaleString('pt-BR');
+        console.log(`[${timestamp}] SCHEDULE: Disparando Worker Diário...`);
         updateFearGreedData();
         updateLatestDailyData();
     });
 }
 
-
+// --- 5. SERVIDOR EXPRESS E API ---
 const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(cors());
@@ -202,27 +217,20 @@ app.use(express.static('public'));
 app.get('/api/data', async (req, res) => {
     const timestampLog = new Date().toLocaleString('pt-BR');
     console.log(`[${timestampLog}] API: Recebida requisição. Verificando cache...`);
-    
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-    
     try {
         const mempool = await db.get('SELECT * FROM mempool_snapshot WHERE id = 1');
         if (!mempool) {
             console.log(`[${timestampLog}] API: Cache inicial vazio. Aguardando workers...`);
             await initialDataLoadPromise;
             console.log(`[${timestampLog}] API: Workers terminaram. Lendo do SQLite...`);
-        } else {
-            console.log(`[${timestampLog}] API: Cache pronto. Lendo do SQLite...`);
         }
-
+        
         const prices = await db.all('SELECT * FROM current_prices');
         const fearGreed = await db.get('SELECT * FROM fear_greed_history ORDER BY date DESC LIMIT 1');
         const globalMetrics = await db.get('SELECT * FROM btc_global_metrics_history ORDER BY timestamp DESC LIMIT 1');
         const dailyPrices = await db.all('SELECT price_usd FROM btc_daily_close_prices ORDER BY date DESC LIMIT 200');
         const freshMempoolData = await db.get('SELECT * FROM mempool_snapshot WHERE id = 1');
-
+        
         let mayer_multiple = null;
         if (prices?.find(p => p.symbol === 'BTC-USD')?.price && dailyPrices?.length >= 200) {
             const currentPrice = prices.find(p => p.symbol === 'BTC-USD').price;
@@ -233,12 +241,29 @@ app.get('/api/data', async (req, res) => {
 
         const responseData = {
             lastUpdateTimestamp: freshMempoolData?.last_updated,
-            prices: { btc_usd: prices?.find(p => p.symbol === 'BTC-USD')?.price, btc_brl: prices?.find(p => p.symbol === 'BTC-BRL')?.price, usdt_brl: prices?.find(p => p.symbol === 'USDT-BRL')?.price, },
-            mempool: { fastest_fee: freshMempoolData?.fastest_fee, half_hour_fee: freshMempoolData?.half_hour_fee, hour_fee: freshMempoolData?.hour_fee, block_height: freshMempoolData?.block_height, tx_count: freshMempoolData?.tx_count, calculated_supply: freshMempoolData?.calculated_supply, },
-            fearGreed: { value: fearGreed?.value, classification: fearGreed?.classification, last_updated: fearGreed?.last_updated },
-            globalMetrics: { market_cap_usd: globalMetrics?.market_cap_usd, mayer_multiple: mayer_multiple }
+            prices: {
+                btc_usd: prices?.find(p => p.symbol === 'BTC-USD')?.price,
+                btc_brl: prices?.find(p => p.symbol === 'BTC-BRL')?.price,
+                usdt_brl: prices?.find(p => p.symbol === 'USDT-BRL')?.price,
+            },
+            mempool: {
+                fastest_fee: freshMempoolData?.fastest_fee,
+                half_hour_fee: freshMempoolData?.half_hour_fee,
+                hour_fee: freshMempoolData?.hour_fee,
+                block_height: freshMempoolData?.block_height,
+                tx_count: freshMempoolData?.tx_count,
+                calculated_supply: freshMempoolData?.calculated_supply,
+            },
+            fearGreed: {
+                value: fearGreed?.value,
+                classification: fearGreed?.classification,
+                last_updated: fearGreed?.last_updated
+            },
+            globalMetrics: {
+                market_cap_usd: globalMetrics?.market_cap_usd,
+                mayer_multiple: mayer_multiple
+            }
         };
-
         res.json(responseData);
     } catch (error) {
         console.error("Erro no endpoint /api/data:", error);
@@ -246,7 +271,7 @@ app.get('/api/data', async (req, res) => {
     }
 });
 
-
+// --- 6. INICIALIZAÇÃO DO SERVIDOR ---
 async function startServer() {
     await initializeDatabase();
     app.listen(PORT, () => {
