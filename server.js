@@ -202,6 +202,11 @@ app.use(express.static('public'));
 app.get('/api/data', async (req, res) => {
     const timestampLog = new Date().toLocaleString('pt-BR');
     console.log(`[${timestampLog}] API: Recebida requisição. Verificando cache...`);
+    
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    
     try {
         const mempool = await db.get('SELECT * FROM mempool_snapshot WHERE id = 1');
         if (!mempool) {
