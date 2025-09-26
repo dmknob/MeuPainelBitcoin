@@ -292,3 +292,15 @@ body.dark-mode #find-best-dca-day-btn {
 /* --- Media Queries para Telas Pequenas --- */
 @media (max-width: 830px) { .dashboard-container { grid-template-columns: repeat(auto-fit, 350px); } }
 @media (max-width: 420px) { body { padding: 10px; } h1 { font-size: 1.8em; } .dashboard-container { grid-template-columns: 1fr; gap: 15px; } .indicador { padding: 15px; } .indicador p { font-size: 1.4em; } }
+/* --- Ajustes Responsivos para o Formulário DCA --- */
+@media (max-width: 600px) {
+    .dca-form {
+        /* Em telas menores, muda para uma única coluna */
+        grid-template-columns: 1fr;
+    }
+
+    #dca-simulate-btn {
+        /* Reseta a regra que prendia o botão na segunda coluna */
+        grid-column: auto;
+    }
+}

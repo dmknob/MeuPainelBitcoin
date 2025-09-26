@@ -1,0 +1,11 @@
+# Ignorar dependências do Node
+node_modules/
+
+# Ignorar arquivo de variáveis de ambiente (contém segredos)
+.env
+
+#Ignorar banco de dados SQLite
+bitpanel.sqlite
+
+# Ignorar configuração teste de carga
+test.yml
