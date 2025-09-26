@@ -1,6 +1,6 @@
 {
   "name": "meupainelbitcoin",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Um painel de indicadores sobre Bitcoin com backend em Node.js e banco de dados SQLite.",
   "main": "server.js",
   "scripts": {
@@ -19,6 +19,7 @@
     "axios": "^1.7.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
     "express": "^4.19.2",
     "node-cron": "^3.0.3",
     "sqlite": "^5.1.1",

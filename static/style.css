@@ -1,0 +1,84 @@
+/* --- Variáveis de Cor (Tema) --- */
+:root {
+    --body-bg: #f0f2f5;
+    --card-bg: #ffffff;
+    --text-color: #1c1e21;
+    --text-color-secondary: #555;
+    --border-color: #dddfe2;
+    --header-color: #333;
+    --accent-color-1: #007bff; /* Azul */
+    --accent-color-2: #28a745; /* Verde */
+    --accent-color-3: #17a2b8; /* Ciano */
+}
+
+body.dark-mode {
+    --body-bg: #121212;
+    --card-bg: #1e1e1e;
+    --text-color: #e0e0e0;
+    --text-color-secondary: #a0a0a0;
+    --border-color: #444;
+    --header-color: #e0e0e0;
+    --accent-color-1: #3498db;
+    --accent-color-2: #2ecc71;
+    --accent-color-3: #1abc9c;
+}
+
+/* --- Estilos Gerais --- */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: var(--body-bg);
+    color: var(--text-color);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+h1 { text-align: center; color: #ff9900; margin-bottom: 20px; font-size: 2.5em; }
+.status-bar { text-align: center; font-size: 0.9em; color: var(--text-color-secondary); margin-bottom: 15px; height: 1.2em; }
+.status-bar b { color: var(--accent-color-2); }
+
+/* --- Botão de Alternância do Tema --- */
+.theme-switch-wrapper { display: flex; align-items: center; justify-content: center; margin-bottom: 25px; }
+.theme-switch-wrapper em { margin-left: 10px; font-size: 1rem; color: var(--text-color-secondary); }
+.theme-switch { position: relative; display: inline-block; width: 60px; height: 34px; }
+.theme-switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; }
+.slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; }
+input:checked + .slider { background-color: #2196F3; }
+input:focus + .slider { box-shadow: 0 0 1px #2196F3; }
+input:checked + .slider:before { transform: translateX(26px); }
+.slider.round { border-radius: 34px; }
+.slider.round:before { border-radius: 50%; }
+
+/* --- Layout Principal (Grid Responsivo) --- */
+.dashboard-container { display: grid; grid-template-columns: repeat(auto-fit, 380px); justify-content: center; gap: 25px; width: 100%; max-width: 1800px; margin: 0 auto; }
+
+/* --- Estilos dos Cards --- */
+.indicador { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); display: flex; flex-direction: column; transition: background-color 0.3s, border-color 0.3s; }
+.indicador h2 { margin-top: 0; margin-bottom: 10px; font-size: 1.1em; color: var(--header-color); border-bottom: 1px solid var(--border-color); padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+.fonte-api { font-size: 0.7em; font-weight: normal; background-color: #e9ecef; color: #495057; padding: 3px 6px; border-radius: 4px; white-space: nowrap; }
+.indicador p { font-size: 1.6em; font-weight: 600; color: var(--accent-color-1); margin: 5px 0; }
+#usdtbrl-price { color: var(--accent-color-3); }
+#fear-greed-value { font-size: 2em; font-weight: bold; margin-bottom: 5px; }
+#fear-greed-classification { font-size: 1.2em; font-style: italic; color: var(--text-color-secondary); margin-bottom: 10px; }
+
+/* --- Sub-indicadores e Notas --- */
+.sub-indicador { margin-top: 15px; padding-top: 10px; border-top: 1px dashed #eaeaea; }
+.sub-indicador:first-of-type { margin-top: 0; padding-top: 0; border-top: none; }
+.sub-indicador p { font-size: 1.2em; font-weight: normal; color: var(--text-color); margin-bottom: 5px; }
+.sub-indicador p strong { color: var(--accent-color-1); font-weight: 600; }
+.sub-indicador span, #mempool-block-height, #mempool-tx-count { font-weight: bold; color: var(--accent-color-2); }
+#mempool-block-height, #mempool-tx-count { font-size: 1.5em; }
+.sub-text { font-size: 0.9em !important; font-weight: normal !important; color: var(--text-color-secondary) !important; margin-top: -5px !important; }
+.update-note { font-size: 0.8em !important; color: var(--text-color-secondary) !important; font-weight: normal !important; text-align: right; margin-top: 10px; margin-bottom: 0; }
+
+/* Calculadoras */
+.calculadora-sats-input-group { margin-bottom: 15px; }
+.calculadora-sats-input-group label { display: block; margin-bottom: 5px; font-weight: 500; color: var(--text-color-secondary); }
+#sats-input { width: calc(100% - 22px); padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 1em; background-color: var(--body-bg); color: var(--text-color); }
+.calculadora-sats-resultado p { font-size: 1.2em; color: var(--text-color); margin-bottom: 8px; }
+.calculadora-sats-resultado strong { color: var(--accent-color-2); }
+
+/* --- Media Queries para Telas Pequenas --- */
+@media (max-width: 830px) { .dashboard-container { grid-template-columns: repeat(auto-fit, 350px); } }
+@media (max-width: 420px) { body { padding: 10px; } h1 { font-size: 1.8em; } .dashboard-container { grid-template-columns: 1fr; gap: 15px; } .indicador { padding: 15px; } .indicador p { font-size: 1.4em; } }

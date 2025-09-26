@@ -5,18 +5,27 @@ const cors = require('cors');
 const cron = require('node-cron');
 const sqlite3 = require('sqlite3');
 const { open } = require('sqlite');
+const path = require('path'); // Essencial para caminhos absolutos
 require('dotenv').config();
 
 // Variáveis globais
 let db;
 let initialDataLoadPromise = null;
-const UPDATE_INTERVAL_MS = 600000; // 10 minutos em milissegundos
+
+// --- CONFIGURAÇÃO DO INTERVALO (LIDO DO .ENV EM SEGUNDOS) ---
+// Lê o intervalo em segundos do .env. Padrão: 600 segundos (10 minutos)
+const UPDATE_INTERVAL_SECONDS = parseInt(process.env.UPDATE_INTERVAL_SECONDS) || 600;
+const UPDATE_INTERVAL_MS = UPDATE_INTERVAL_SECONDS * 1000;
+// Converte o intervalo para minutos para usar na string do cron.
+// O cron não aceita intervalos como "a cada 300 segundos", então convertemos para "a cada 5 minutos".
+const cronIntervalMinutes = Math.max(1, Math.round(UPDATE_INTERVAL_SECONDS / 60));
+const CRON_SCHEDULE_HIGH_FREQUENCY = `*/${cronIntervalMinutes} * * * *`;
 
 // --- 2. CONFIGURAÇÃO DO BANCO DE DADOS ---
 async function initializeDatabase() {
     try {
         db = await open({
-            filename: './database.sqlite',
+            filename: './bitpanel.sqlite',
             driver: sqlite3.Database
         });
         await db.exec(`
@@ -42,14 +51,34 @@ async function updateLatestDailyData() { /* ... código completo no final ... */
 function calculateBitcoinSupply(blockHeight) { /* ... código completo no final ... */ }
 
 // --- 4. AGENDADORES ---
-function scheduleHighFrequencyWorker() { cron.schedule('*/10 * * * *', updateHighFrequencyData); }
-function scheduleDailyWorker() { cron.schedule('15 0 * * *', () => { const timestamp = new Date().toLocaleString('pt-BR'); console.log(`[${timestamp}] SCHEDULE: Disparando Worker Diário...`); updateFearGreedData(); updateLatestDailyData(); }); }
+function scheduleHighFrequencyWorker() {
+    console.log(`Agendando worker de alta frequência para rodar a cada ${cronIntervalMinutes} minutos (${UPDATE_INTERVAL_SECONDS} segundos).`);
+    // Usa a variável com o agendamento dinâmico
+    cron.schedule(CRON_SCHEDULE_HIGH_FREQUENCY, updateHighFrequencyData);
+}
+function scheduleDailyWorker() {
+    cron.schedule('15 0 * * *', () => {
+        const timestamp = new Date().toLocaleString('pt-BR');
+        console.log(`[${timestamp}] SCHEDULE: Disparando Worker Diário...`);
+        updateFearGreedData();
+        updateLatestDailyData();
+    });
+}
 
 // --- 5. SERVIDOR EXPRESS E API (LÓGICA ATUALIZADA) ---
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// --- CONFIGURAÇÃO DO SSR E ARQUIVOS ESTÁTICOS ---
 app.use(cors());
-app.use(express.static('public'));
+
+app.use(express.static(path.join(__dirname, 'static'))); // Define o caminho absoluto para a pasta 'static'
+
+app.set('view engine', 'ejs'); // Define EJS como o template engine
+app.set('views', path.join(__dirname, 'views')); // Define o caminho absoluto para a pasta 'views'
+
+//app.use(express.static('public'));
+
 
 app.get('/api/data', async (req, res) => {
     const timestampLog = new Date().toLocaleString('pt-BR');
@@ -76,28 +105,32 @@ app.get('/api/data', async (req, res) => {
             mayer_multiple = currentPrice / sma200;
         }
 
-        // ### INÍCIO DA CORREÇÃO ###
-        // O servidor calcula o tempo de espera para o cliente
+        // --- CÁLCULO DE TEMPO (USA A VARIÁVEL EM MS) ---
+        // Usa a variável de intervalo lida do .env (já em milissegundos)
         const lastUpdateTimestamp = freshMempoolData?.last_updated || Date.now();
         const nextUpdateTime = lastUpdateTimestamp + UPDATE_INTERVAL_MS;
         const timeUntilNextUpdate = nextUpdateTime - Date.now();
-        // ### FIM DA CORREÇÃO ###
-
+        
         const responseData = {
             lastUpdateTimestamp: lastUpdateTimestamp,
-            timeUntilNextUpdate: timeUntilNextUpdate, // Envia a instrução de tempo
+            timeUntilNextUpdate: timeUntilNextUpdate,
 
             prices: { btc_usd: prices?.find(p => p.symbol === 'BTC-USD')?.price, btc_brl: prices?.find(p => p.symbol === 'BTC-BRL')?.price, usdt_brl: prices?.find(p => p.symbol === 'USDT-BRL')?.price },
             mempool: { fastest_fee: freshMempoolData?.fastest_fee, half_hour_fee: freshMempoolData?.half_hour_fee, hour_fee: freshMempoolData?.hour_fee, block_height: freshMempoolData?.block_height, tx_count: freshMempoolData?.tx_count, calculated_supply: freshMempoolData?.calculated_supply },
             fearGreed: { value: fearGreed?.value, classification: fearGreed?.classification, last_updated: fearGreed?.last_updated },
             globalMetrics: { market_cap_usd: globalMetrics?.market_cap_usd, mayer_multiple: mayer_multiple }
         };
-
         res.json(responseData);
     } catch (error) {
         console.error("Erro no endpoint /api/data:", error);
         res.status(500).json({ error: "Falha ao processar a requisição." });
     }
+});
+
+// NOVA ROTA: Rota para renderizar a página principal
+app.get('/', (req, res) => {
+    // Em vez de servir um arquivo estático, agora renderizamos uma view EJS
+    res.render('pages/index');
 });
 
 // --- 6. INICIALIZAÇÃO DO SERVIDOR ---
