@@ -1,43 +1,39 @@
 <%- include('../partials/header') %>
 
 <main class="dashboard-container">
+
     <div class="indicador">
         <h2>Preço do Bitcoin (BRL) <span class="fonte-api">(CoinGecko)</span></h2>
         <p id="bitcoin-preco-brl">Carregando...</p>
     </div>
+
     <div class="indicador">
         <h2>Preço do Bitcoin (USD) <span class="fonte-api">(CoinGecko)</span></h2>
         <p id="bitcoin-preco-usd">Carregando...</p>
     </div>
+
     <div class="indicador">
         <h2>Cotação Dólar (USDT/BRL) <span class="fonte-api">(CoinGecko)</span></h2>
         <p id="usdtbrl-price">Carregando...</p>
     </div>
-    <div class="indicador">
-        <h2>Múltiplo de Mayer <span class="fonte-api">(Calculado)</span></h2>
-        <p id="bitcoin-mayer-multiple">Carregando...</p>
-    </div>
+
     <div class="indicador">
         <h2>Capitalização de Mercado (USD) <span class="fonte-api">(Calculado)</span></h2>
         <p id="bitcoin-marketcap-usd">Carregando...</p>
     </div>
+
+    <div class="indicador">
+        <h2>Múltiplo de Mayer <span class="fonte-api">(Calculado)</span></h2>
+        <p id="bitcoin-mayer-multiple">Carregando...</p>
+    </div>
+
     <div class="indicador">
         <h2>Índice de Medo e Ganância (F&G) <span class="fonte-api">(Alternative.me)</span></h2>
         <p id="fear-greed-value">Carregando...</p>
         <p id="fear-greed-classification">Carregando...</p>
         <p class="update-note">Última atualização: <span id="fear-greed-last-updated">Nunca</span></p>
     </div>
-    <div class="indicador">
-        <h2>Calculadora Sats <span class="fonte-api">(Preços CoinGecko)</span></h2>
-        <div class="calculadora-sats-input-group">
-            <label for="sats-input">Quantidade de Sats:</label>
-            <input type="number" id="sats-input" placeholder="Digite os sats aqui" min="0">
-        </div>
-        <div class="calculadora-sats-resultado">
-            <p>Valor em BRL: <strong id="sats-to-brl">R$ 0.00</strong></p>
-            <p>Valor em USD: <strong id="sats-to-usd">$ 0.00</strong></p>
-        </div>
-    </div>
+
     <div class="indicador">
         <h2>Rede Bitcoin <span class="fonte-api">(Mempool.space)</span></h2>
         <div class="sub-indicador">
@@ -56,6 +52,19 @@
             <p><span id="mempool-tx-count">Carregando...</span></p>
         </div>
     </div>
+
+    <div class="indicador">
+        <h2>Calculadora Sats</h2>
+        <div class="calculadora-sats-input-group">
+            <label for="sats-input">Quantidade de Sats:</label>
+            <input type="number" id="sats-input" placeholder="Digite os sats aqui" min="0">
+        </div>
+        <div class="calculadora-sats-resultado">
+            <p>Valor em BRL: <strong id="sats-to-brl">R$ 0.00</strong></p>
+            <p>Valor em USD: <strong id="sats-to-usd">$ 0.00</strong></p>
+        </div>
+    </div>
+
 </main>
 
 <%- include('../partials/footer') %>

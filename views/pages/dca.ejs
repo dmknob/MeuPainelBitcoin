@@ -1,0 +1,61 @@
+<%- include('../partials/header') %>
+
+<main class="main-content">
+    <div class="page-title">
+        <h2>Calculadora de DCA (Dollar Cost Averaging)</h2>
+        <p>Simule o resultado de compras recorrentes de Bitcoin ao longo do tempo (limitado ao histórico de 1 ano).</p>
+    </div>
+
+    <div class="dca-calculator-container indicador">
+        <div class="dca-form">
+            <div class="form-group">
+                <label for="dca-amount">Valor do Aporte</label>
+                <input type="number" id="dca-amount" value="100" min="1">
+            </div>
+            <div class="form-group">
+                <label>Moeda do Aporte</label>
+                <div class="currency-selector">
+                    <input type="radio" id="dca-currency-brl" name="dca-currency" value="brl" checked>
+                    <label for="dca-currency-brl">BRL (R$)</label>
+                    <input type="radio" id="dca-currency-usd" name="dca-currency" value="usd">
+                    <label for="dca-currency-usd">USD ($)</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="dca-frequency">Frequência do Aporte</label>
+                <select id="dca-frequency">
+                    <option value="daily">Diário</option>
+                    <option value="weekly" selected>Semanal</option>
+                    <option value="monthly">Mensal</option>
+                </select>
+            </div>
+            <div class="form-group" id="dca-day-selector-weekly">
+                <label for="dca-day-of-week">Dia da Semana</label>
+                <select id="dca-day-of-week">
+                    <option value="1">Segunda-feira</option>
+                    <option value="2">Terça-feira</option>
+                    <option value="3">Quarta-feira</option>
+                    <option value="4">Quinta-feira</option>
+                    <option value="5">Sexta-feira</option>
+                    <option value="6">Sábado</option>
+                    <option value="0">Domingo</option>
+                </select>
+            </div>
+            <div class="form-group" id="dca-day-selector-monthly" style="display: none;">
+                <label for="dca-day-of-month">Dia do Mês</label>
+                <input type="number" id="dca-day-of-month" value="1" min="1" max="31">
+            </div>
+            <button id="dca-simulate-btn">Simular</button>
+        </div>
+
+        <div id="dca-results" class="dca-results">
+        </div>
+        <div class="best-day-finder">
+            <button id="find-best-dca-day-btn">Qual o Melhor Dia para DCA?</button>
+            <div id="best-dca-day-results" class="dca-results">
+            </div>
+        </div>
+    </div>
+</main>
+
+<%- include('../partials/footer') %>

@@ -1,3 +1,12 @@
-    <script src="script.js"></script>
+    <script src="/js/common.js"></script>
+
+    <% if (page === 'dashboard') { %>
+        <script src="/js/dashboard.js"></script>
+    <% } %>
+
+    <% if (page === 'dca') { %>
+        <script src="/js/dca.js"></script> 
+    <% } %>
+
 </body>
 </html>

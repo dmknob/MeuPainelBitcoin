@@ -32,7 +32,11 @@ async function initializeDatabase() {
             CREATE TABLE IF NOT EXISTS current_prices ( symbol TEXT PRIMARY KEY, price REAL NOT NULL, last_updated INTEGER NOT NULL );
             CREATE TABLE IF NOT EXISTS mempool_snapshot ( id INTEGER PRIMARY KEY DEFAULT 1, fastest_fee INTEGER, half_hour_fee INTEGER, hour_fee INTEGER, block_height INTEGER, tx_count INTEGER, calculated_supply REAL, last_updated INTEGER NOT NULL);
             CREATE TABLE IF NOT EXISTS btc_global_metrics_history ( id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp INTEGER NOT NULL, market_cap_usd REAL NOT NULL);
-            CREATE TABLE IF NOT EXISTS btc_daily_close_prices ( date TEXT PRIMARY KEY, price_usd REAL NOT NULL);
+            CREATE TABLE IF NOT EXISTS btc_daily_close_prices (
+                date TEXT PRIMARY KEY,
+                price_usd REAL NOT NULL,
+                price_brl REAL NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS fear_greed_history ( date TEXT PRIMARY KEY, value INTEGER NOT NULL, classification TEXT NOT NULL, last_updated INTEGER NOT NULL);
         `);
         console.log("Banco de dados SQLite conectado e tabelas prontas.");
@@ -127,10 +131,38 @@ app.get('/api/data', async (req, res) => {
     }
 });
 
-// NOVA ROTA: Rota para renderizar a página principal
+// ROTA DE API ATUALIZADA: Agora limita o histórico aos últimos 365 dias
+app.get('/api/historical-prices', async (req, res) => {
+    const timestampLog = new Date().toLocaleString('pt-BR');
+    console.log(`[${timestampLog}] API: Recebida requisição para o histórico de preços (últimos 365 dias).`);
+    try {
+        // Calcula a data de 365 dias atrás no formato YYYY-MM-DD
+        const date365DaysAgo = new Date();
+        date365DaysAgo.setDate(date365DaysAgo.getDate() - 365);
+        const startDate = date365DaysAgo.toISOString().split('T')[0];
+
+        // Adiciona a cláusula WHERE para filtrar os dados pela data
+        const historicalData = await db.all(
+            'SELECT date, price_usd, price_brl FROM btc_daily_close_prices WHERE date >= ? ORDER BY date ASC',
+            [startDate]
+        );
+        
+        res.json(historicalData);
+    } catch (error) {
+        console.error("Erro ao buscar dados históricos do SQLite:", error);
+        res.status(500).json({ error: "Falha ao buscar dados históricos." });
+    }
+});
+
+// Rota para renderizar a página principal
 app.get('/', (req, res) => {
-    // Em vez de servir um arquivo estático, agora renderizamos uma view EJS
-    res.render('pages/index');
+    // Passamos uma variável 'page' para o template saber qual menu destacar no futuro
+    res.render('pages/index', { page: 'dashboard' });
+});
+
+// NOVA ROTA DE PÁGINA: Para renderizar a página da Calculadora DCA
+app.get('/dca', (req, res) => {
+    res.render('pages/dca', { page: 'dca' });
 });
 
 // --- 6. INICIALIZAÇÃO DO SERVIDOR ---
@@ -155,6 +187,83 @@ startServer();
 // --- Funções Worker Completas (código colapsado para legibilidade) ---
 async function updateFearGreedData() { const timestampLog = new Date().toLocaleString('pt-BR'); try { console.log(`[${timestampLog}] Worker: Buscando dados do Fear & Greed Index...`); const response = await axios.get('https://api.alternative.me/fng/?limit=1&format=json'); const fngData = response.data.data[0]; const today = new Date().toISOString().split('T')[0]; const currentTime = Date.now(); await db.run('INSERT OR REPLACE INTO fear_greed_history (date, value, classification, last_updated) VALUES (?, ?, ?, ?)', [today, fngData.value, fngData.value_classification, currentTime]); console.log(`[${timestampLog}] Worker: Dados do Fear & Greed Index salvos para a data ${today}.`); } catch (error) { console.error(`[${timestampLog}] Worker: ERRO ao buscar dados do Fear & Greed Index:`, error.message); } }
 async function updateHighFrequencyData() { const timestampLog = new Date().toLocaleString('pt-BR'); console.log(`[${timestampLog}] Worker: Buscando dados de alta frequência (Preços, Mempool)...`); const coingeckoApiKey = process.env.COINGECKO_API_KEY; if (!coingeckoApiKey || coingeckoApiKey === 'SUA_API_KEY_AQUI') { console.error(`[${timestampLog}] Worker: ERRO CRÍTICO - A chave COINGECKO_API_KEY não está definida no arquivo .env do servidor.`); return; } try { const [pricesResponse, feesResponse, blockHeightResponse, mempoolStatsResponse] = await Promise.all([axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,tether&vs_currencies=usd,brl&x_cg_demo_api_key=${coingeckoApiKey}`), axios.get('https://mempool.space/api/v1/fees/recommended'), axios.get('https://mempool.space/api/blocks/tip/height'), axios.get('https://mempool.space/api/mempool')]); const currentTime = Date.now(); const pricesData = pricesResponse.data; const btcPriceUSD = pricesData?.bitcoin?.usd; const btcPriceBRL = pricesData?.bitcoin?.brl; const usdtPriceBRL = pricesData?.tether?.brl; if (typeof btcPriceUSD !== 'number' || typeof btcPriceBRL !== 'number' || typeof usdtPriceBRL !== 'number') { throw new Error(`Resposta de preços da CoinGecko incompleta: ${JSON.stringify(pricesData)}`); } await db.run('INSERT OR REPLACE INTO current_prices (symbol, price, last_updated) VALUES (?, ?, ?)', ['BTC-USD', btcPriceUSD, currentTime]); await db.run('INSERT OR REPLACE INTO current_prices (symbol, price, last_updated) VALUES (?, ?, ?)', ['BTC-BRL', btcPriceBRL, currentTime]); await db.run('INSERT OR REPLACE INTO current_prices (symbol, price, last_updated) VALUES (?, ?, ?)', ['USDT-BRL', usdtPriceBRL, currentTime]); const blockHeight = blockHeightResponse.data; const totalSupply = calculateBitcoinSupply(blockHeight); await db.run(`INSERT OR REPLACE INTO mempool_snapshot (id, fastest_fee, half_hour_fee, hour_fee, block_height, tx_count, calculated_supply, last_updated) VALUES (1, ?, ?, ?, ?, ?, ?, ?)`, [feesResponse.data.fastestFee, feesResponse.data.halfHourFee, feesResponse.data.hourFee, blockHeight, mempoolStatsResponse.data.count, totalSupply, currentTime]); const marketCap = btcPriceUSD * totalSupply; await db.run('INSERT INTO btc_global_metrics_history (timestamp, market_cap_usd) VALUES (?, ?)', [currentTime, marketCap]); console.log(`[${timestampLog}] Worker: Dados de alta frequência salvos com sucesso.`); } catch (error) { console.error(`[${timestampLog}] Worker: ERRO ao buscar ou validar dados de alta frequência:`, error.message); } }
-async function syncHistoricDataOnStartup() { const timestampLog = new Date().toLocaleString('pt-BR'); console.log(`[${timestampLog}] Worker (Inicialização): Sincronizando histórico de preços diários...`); const coingeckoApiKey = process.env.COINGECKO_API_KEY; try { const response = await axios.get(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=365&interval=daily&x_cg_demo_api_key=${coingeckoApiKey}`); const dailyPrices = response.data.prices; if (!dailyPrices || dailyPrices.length === 0) { throw new Error("API de histórico não retornou dados."); } const stmt = await db.prepare('INSERT OR IGNORE INTO btc_daily_close_prices (date, price_usd) VALUES (?, ?)'); let insertedCount = 0; for (const [timestamp, price] of dailyPrices) { const date = new Date(timestamp).toISOString().split('T')[0]; const result = await stmt.run(date, price); if (result.changes > 0) { insertedCount++; } } await stmt.finalize(); console.log(`[${timestampLog}] Worker (Inicialização): Sincronização concluída. ${insertedCount} novos registros adicionados.`); } catch (error) { console.error(`[${timestampLog}] Worker (Inicialização): ERRO ao sincronizar histórico:`, error.message); } }
-async function updateLatestDailyData() { const timestampLog = new Date().toLocaleString('pt-BR'); console.log(`[${timestampLog}] Worker (Diário): Buscando último preço de fechamento...`); const coingeckoApiKey = process.env.COINGECKO_API_KEY; try { const response = await axios.get(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=2&interval=daily&x_cg_demo_api_key=${coingeckoApiKey}`); if (response.data.prices && response.data.prices.length > 1) { const yesterdayData = response.data.prices[response.data.prices.length - 2]; const date = new Date(yesterdayData[0]).toISOString().split('T')[0]; const price = yesterdayData[1]; const result = await db.run('INSERT OR IGNORE INTO btc_daily_close_prices (date, price_usd) VALUES (?, ?)', [date, price]); if (result.changes > 0) { console.log(`[${timestampLog}] Worker (Diário): Adicionado novo preço para ${date}.`); } else { console.log(`[${timestampLog}] Worker (Diário): Preço para ${date} já estava atualizado.`); } } } catch (error) { console.error(`[${timestampLog}] Worker (Diário): ERRO ao buscar histórico diário:`, error.message); } }
+
+async function syncHistoricDataOnStartup() {
+    const timestampLog = new Date().toLocaleString('pt-BR');
+    console.log(`[${timestampLog}] Worker (Inicialização): Sincronizando histórico de preços diários (USD & BRL)...`);
+    const coingeckoApiKey = process.env.COINGECKO_API_KEY;
+
+    try {
+        // Faz as duas chamadas de API em paralelo
+        const [usdResponse, brlResponse] = await Promise.all([
+            axios.get(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=365&interval=daily&x_cg_demo_api_key=${coingeckoApiKey}`),
+            axios.get(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=brl&days=365&interval=daily&x_cg_demo_api_key=${coingeckoApiKey}`)
+        ]);
+
+        const usdPrices = usdResponse.data.prices;
+        const brlPrices = brlResponse.data.prices;
+
+        if (!usdPrices || !brlPrices || usdPrices.length === 0 || brlPrices.length === 0) {
+            throw new Error("API de histórico não retornou dados para uma ou ambas as moedas.");
+        }
+
+        // Usa um Map para unir os dados de forma eficiente pela data
+        const combinedPrices = new Map();
+        for (const [timestamp, price] of usdPrices) {
+            const date = new Date(timestamp).toISOString().split('T')[0];
+            combinedPrices.set(date, { date, price_usd: price });
+        }
+        for (const [timestamp, price] of brlPrices) {
+            const date = new Date(timestamp).toISOString().split('T')[0];
+            if (combinedPrices.has(date)) {
+                combinedPrices.get(date).price_brl = price;
+            }
+        }
+
+        const stmt = await db.prepare('INSERT OR IGNORE INTO btc_daily_close_prices (date, price_usd, price_brl) VALUES (?, ?, ?)');
+        let insertedCount = 0;
+        for (const priceData of combinedPrices.values()) {
+            // Garante que só inserimos se tivermos ambas as cotações para o dia
+            if (priceData.price_usd && priceData.price_brl) {
+                const result = await stmt.run(priceData.date, priceData.price_usd, priceData.price_brl);
+                if (result.changes > 0) insertedCount++;
+            }
+        }
+        await stmt.finalize();
+        console.log(`[${timestampLog}] Worker (Inicialização): Sincronização concluída. ${insertedCount} novos registros de histórico adicionados.`);
+    } catch (error) {
+        console.error(`[${timestampLog}] Worker (Inicialização): ERRO ao sincronizar histórico:`, error.message);
+    }
+}
+
+async function updateLatestDailyData() {
+    const timestampLog = new Date().toLocaleString('pt-BR');
+    console.log(`[${timestampLog}] Worker (Diário): Buscando último preço de fechamento (USD & BRL)...`);
+    const coingeckoApiKey = process.env.COINGECKO_API_KEY;
+    try {
+        const [usdResponse, brlResponse] = await Promise.all([
+            axios.get(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=2&interval=daily&x_cg_demo_api_key=${coingeckoApiKey}`),
+            axios.get(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=brl&days=2&interval=daily&x_cg_demo_api_key=${coingeckoApiKey}`)
+        ]);
+
+        if (usdResponse.data.prices && usdResponse.data.prices.length > 1 && brlResponse.data.prices && brlResponse.data.prices.length > 1) {
+            const yesterdayUsdData = usdResponse.data.prices[usdResponse.data.prices.length - 2];
+            const yesterdayBrlData = brlResponse.data.prices[brlResponse.data.prices.length - 2];
+            
+            const date = new Date(yesterdayUsdData[0]).toISOString().split('T')[0];
+            const priceUsd = yesterdayUsdData[1];
+            const priceBrl = yesterdayBrlData[1];
+
+            const result = await db.run('INSERT OR IGNORE INTO btc_daily_close_prices (date, price_usd, price_brl) VALUES (?, ?, ?)', [date, priceUsd, priceBrl]);
+            if (result.changes > 0) {
+                console.log(`[${timestampLog}] Worker (Diário): Adicionado novo preço de fechamento para ${date}.`);
+            } else {
+                console.log(`[${timestampLog}] Worker (Diário): Preço para ${date} já estava atualizado.`);
+            }
+        }
+    } catch (error) {
+        console.error(`[${timestampLog}] Worker (Diário): ERRO ao buscar histórico diário:`, error.message);
+    }
+}
+
 function calculateBitcoinSupply(blockHeight) { let supply = 0; let reward = 50; let halvingInterval = 210000; let blocksRemaining = blockHeight; while (blocksRemaining > 0) { let blocksInEpoch = Math.min(blocksRemaining, halvingInterval); supply += blocksInEpoch * reward; reward /= 2; blocksRemaining -= blocksInEpoch; } supply += 50; return supply; }

@@ -3,11 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bit Panel</title>
-    <link rel="stylesheet" href="style.css">
+    <title>BitPanel</title>
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <h1>Painel Bitcoin</h1>
+    <header class="main-header">
+        <h1>BitPanel</h1>
+        <nav class="main-nav">
+            <ul>
+                <li><a href="/" class="<%= page === 'dashboard' ? 'active' : '' %>">Painel Principal</a></li>
+                <li><a href="/dca" class="<%= page === 'dca' ? 'active' : '' %>">Calculadora DCA</a></li>
+            </ul>
+        </nav>
+    </header>
 
     <div class="status-bar">
         <span>Última atualização do servidor: <b id="last-update-time">Carregando...</b></span>
@@ -15,7 +23,7 @@
 
     <div class="theme-switch-wrapper">
         <label class="theme-switch" for="checkbox">
-            <input type="checkbox" id="checkbox" value="false" />
+            <input type="checkbox" id="checkbox" />
             <div class="slider round"></div>
         </label>
         <em>Modo Escuro</em>
