@@ -78,7 +78,7 @@ function renderData(data) {
 async function fetchAllData() {
     console.log("Buscando dados atualizados do servidor...");
     try {
-        const response = await fetch(`/api/data?t=${Date.now()}`); 
+        const response = await fetch('api/data'); 
         if (!response.ok) {
             throw new Error(`Servidor não está pronto ou respondeu com erro: ${response.status}`);
         }

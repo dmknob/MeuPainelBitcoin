@@ -292,15 +292,52 @@ body.dark-mode #find-best-dca-day-btn {
 /* --- Media Queries para Telas Pequenas --- */
 @media (max-width: 830px) { .dashboard-container { grid-template-columns: repeat(auto-fit, 350px); } }
 @media (max-width: 420px) { body { padding: 10px; } h1 { font-size: 1.8em; } .dashboard-container { grid-template-columns: 1fr; gap: 15px; } .indicador { padding: 15px; } .indicador p { font-size: 1.4em; } }
-/* --- Ajustes Responsivos para o Formulário DCA --- */
-@media (max-width: 600px) {
-    .dca-form {
-        /* Em telas menores, muda para uma única coluna */
-        grid-template-columns: 1fr;
+
+/* --- Ajustes Responsivos Genéricos --- */
+@media (max-width: 768px) { /* tablets e celulares em paisagem */
+    .page-title {
+        padding: 0 10px;
+    }
+    .dca-calculator-container {
+        padding: 0 10px; /* Adiciona um padding nas laterais */
+    }
+}
+
+@media (max-width: 500px) { /* Celulares */
+    /* Geral para o painel de indicadores */
+    .dashboard-container {
+        grid-template-columns: 1fr; /* Força uma única coluna para todos os indicadores */
+        gap: 15px;
+    }
+    .indicador {
+        padding: 15px;
     }
 
-    #dca-simulate-btn {
-        /* Reseta a regra que prendia o botão na segunda coluna */
-        grid-column: auto;
+    /* Específico para o formulário DCA */
+    .dca-form {
+        grid-template-columns: 1fr; /* Uma única coluna */
+        gap: 15px; /* Reduz o gap para economizar espaço */
     }
+    #dca-simulate-btn {
+        grid-column: auto; /* Garante que o botão ocupe sua própria linha */
+    }
+    .form-group label {
+        font-size: 0.85em; /* Reduz um pouco o tamanho da fonte dos labels */
+    }
+    .currency-selector label {
+        padding: 3px 5px; /* Reduz o padding dos botões de moeda */
+        font-size: 0.8em !important;
+    }
+    .dca-results p {
+        font-size: 1.1em !important; /* Ajusta o tamanho da fonte dos resultados */
+    }
+    .best-day-finder {
+        padding: 15px 0; /* Ajusta o padding do bloco do melhor dia */
+    }
+}
+
+/* Regra para garantir que o contêiner principal da calculadora não vaze */
+.dca-calculator-container {
+    max-width: 600px; /* Já existia, mas é bom reforçar */
+    margin: 0 auto;   /* E centralizar */
 }
