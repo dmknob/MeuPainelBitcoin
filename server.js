@@ -156,13 +156,20 @@ app.get('/api/historical-prices', async (req, res) => {
 
 // Rota para renderizar a página principal
 app.get('/', (req, res) => {
-    // Passamos uma variável 'page' para o template saber qual menu destacar no futuro
-    res.render('pages/index', { page: 'dashboard' });
+    res.render('pages/index', { 
+        page: 'dashboard',
+        title: 'BitPanel | Preço Bitcoin, Indicadores e Cotação em Tempo Real',
+        description: 'Acompanhe o preço do Bitcoin (BTC) em tempo real, indicadores on-chain como o Múltiplo de Mayer, o Índice de Medo e Ganância (Fear & Greed) e as taxas da rede. Seu painel completo para a cotação do BTC.'
+    });
 });
 
 // NOVA ROTA DE PÁGINA: Para renderizar a página da Calculadora DCA
 app.get('/dca', (req, res) => {
-    res.render('pages/dca', { page: 'dca' });
+    res.render('pages/dca', { 
+        page: 'dca',
+        title: 'Calculadora DCA de Bitcoin | Simule Dollar Cost Averaging',
+        description: 'Use a calculadora de DCA (Dollar Cost Averaging) para simular o resultado de aportes recorrentes em Bitcoin (BTC), em Reais (BRL) ou Dólares (USD). Descubra o melhor dia da semana ou do mês para comprar Bitcoin.'
+    });
 });
 
 // --- 6. INICIALIZAÇÃO DO SERVIDOR ---

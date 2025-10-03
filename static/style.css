@@ -289,6 +289,21 @@ body.dark-mode #find-best-dca-day-btn {
     font-weight: bold;
 }
 
+.intro-content, .content-section {
+    /* Faz a seção ocupar toda a largura da grade */
+    grid-column: 1 / -1; 
+}
+.content-section h3 {
+    color: var(--header-color);
+    margin-top: 0;
+}
+.content-section p {
+    font-size: 1em !important;
+    font-weight: 400 !important;
+    line-height: 1.6;
+    color: var(--text-color-secondary);
+}
+
 /* --- Media Queries para Telas Pequenas --- */
 @media (max-width: 830px) { .dashboard-container { grid-template-columns: repeat(auto-fit, 350px); } }
 @media (max-width: 420px) { body { padding: 10px; } h1 { font-size: 1.8em; } .dashboard-container { grid-template-columns: 1fr; gap: 15px; } .indicador { padding: 15px; } .indicador p { font-size: 1.4em; } }
