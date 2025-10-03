@@ -50,9 +50,21 @@ if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js')
             .then(registration => {
                 console.log('PWA: Service Worker registrado com sucesso:', registration);
+                // Força a atualização do Service Worker imediatamente
+                if (registration.waiting) {
+                    registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                }
             })
             .catch(error => {
                 console.log('PWA: Falha no registro do Service Worker:', error);
             });
+    });
+
+    // Adiciona listener para mensagens do Service Worker
+    navigator.serviceWorker.addEventListener('message', event => {
+        if (event.data && event.data.type === 'REFRESH_PAGE') {
+            console.log('Service Worker: Recebeu REFRESH_PAGE, recarregando...');
+            window.location.reload(true); // Recarrega do servidor, ignorando cache HTTP
+        }
     });
 }

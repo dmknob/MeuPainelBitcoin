@@ -1,5 +1,4 @@
-const CACHE_NAME = 'bitpanel-cache-v2'; // <--- VERSÃO DO CACHE ATUALIZADA!
-// Lista de arquivos que compõem a "casca" do aplicativo (App Shell)
+const CACHE_NAME = 'bitpanel-cache-v3'; // <--- CACHE_NAME INCREMENTADO NOVAMENTE!
 const urlsToCache = [
     '/',
     '/dca',
@@ -8,13 +7,15 @@ const urlsToCache = [
     '/js/dashboard.js',
     '/js/dca.js',
     '/images/icon-192x192.png',
-    '/images/icon-512x512.png'
+    '/images/icon-512x512.png',
     // Adicione outros assets estáticos importantes aqui, se houver
 ];
 
 // Evento de Instalação: Salva o App Shell no cache
 self.addEventListener('install', event => {
     console.log('Service Worker: Instalando...');
+    // Força o Service Worker a ativar imediatamente após a instalação, ignorando o estado de espera.
+    self.skipWaiting(); 
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(cache => {
@@ -27,7 +28,7 @@ self.addEventListener('install', event => {
     );
 });
 
-// Evento de Ativação: Limpa caches antigos
+// Evento de Ativação: Limpa caches antigos e assume controle
 self.addEventListener('activate', event => {
     console.log('Service Worker: Ativando...');
     event.waitUntil(
@@ -42,10 +43,17 @@ self.addEventListener('activate', event => {
             );
         }).then(() => {
             // Garante que o Service Worker assume o controle da página imediatamente
-            // Isso pode ser útil para ver as atualizações sem um hard refresh
             return self.clients.claim();
         })
     );
+});
+
+// Listener para mensagens do Service Worker (para SKIP_WAITING no activate)
+self.addEventListener('message', event => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        console.log('Service Worker: Recebeu SKIP_WAITING, pulando espera.');
+        self.skipWaiting();
+    }
 });
 
 
@@ -55,7 +63,7 @@ self.addEventListener('fetch', event => {
     if (event.request.url.includes('/api/')) {
         event.respondWith(
             fetch(event.request).catch(error => {
-                console.error('Service Worker: Falha ao buscar API (offline ou erro de rede):', error);
+                console.error('Service Worker: Falha ao buscar API (offline ou erro de rede):', event.request.url, error);
                 // Não há fallback no SW aqui, a lógica de erro/offline deve ser no frontend
                 // Ou você pode retornar uma resposta de erro genérica:
                 // return new Response(JSON.stringify({ error: 'Offline' }), { headers: { 'Content-Type': 'application/json' }, status: 503 });
@@ -65,25 +73,19 @@ self.addEventListener('fetch', event => {
     }
 
     // 2. Estratégia para Assets Estáticos (CSS, JS, Imagens, HTML do App Shell): Stale-While-Revalidate
-    // Isso garante que o conteúdo seja servido rapidamente do cache e atualizado em segundo plano.
-    // Usamos 'some' para verificar se a URL da requisição corresponde a algum item em urlsToCache.
-    // O replace(/^\//, '') remove a barra inicial para uma comparação mais flexível.
     const isAppShellAsset = urlsToCache.some(url => event.request.url.includes(url.replace(/^\//, '')) || event.request.url === self.location.origin + url);
 
     if (isAppShellAsset) {
         event.respondWith(
             caches.open(CACHE_NAME).then(cache => {
                 return cache.match(event.request).then(response => {
-                    // Tenta buscar da rede em segundo plano para atualizar o cache
                     const fetchPromise = fetch(event.request).then(networkResponse => {
-                        cache.put(event.request, networkResponse.clone()); // Atualiza o cache
+                        cache.put(event.request, networkResponse.clone());
                         return networkResponse;
                     }).catch(error => {
                         console.warn('Service Worker: Falha ao revalidar asset da rede:', event.request.url, error);
-                        // Se a rede falhar na revalidação, continua servindo do cache se houver
                     });
                     
-                    // Retorna a versão do cache imediatamente, ou espera pela rede se não houver cache
                     return response || fetchPromise;
                 });
             })
@@ -91,8 +93,7 @@ self.addEventListener('fetch', event => {
         return;
     }
 
-    // 3. Estratégia padrão para outros recursos (ex: imagens externas não cacheáveis no App Shell): Network First
-    // Tenta ir para a rede primeiro. Se falhar, tenta o cache.
+    // 3. Estratégia padrão para outros recursos: Network First, then Cache
     event.respondWith(
         fetch(event.request).catch(() => {
             return caches.match(event.request);
