@@ -1,3 +1,5 @@
+.DS_Store
+
 # Ignorar dependências do Node
 node_modules/
 

@@ -1,132 +1,189 @@
-/* --- Variáveis de Cor (Tema) --- */
+/* Paleta de Cores (Dark Mode & Light Mode) */
 :root {
-    --body-bg: #f0f2f5;
-    --card-bg: #ffffff;
-    --text-color: #1c1e21;
-    --text-color-secondary: #555;
-    --border-color: #dddfe2;
-    --header-color: #333;
-    --accent-color-1: #007bff; /* Azul */
-    --accent-color-2: #28a745; /* Verde */
-    --accent-color-3: #17a2b8; /* Ciano */
+    /* Light Mode */
+    --body-bg: #f4f7f6;
+    --header-bg: #ffffff;
+    --header-color: #333333;
+    --text-color: #333333;
+    --text-color-secondary: #555555;
+    --border-color: #e0e0e0;
+    --indicador-bg: #ffffff;
+    --shadow-color: rgba(0, 0, 0, 0.08);
+    --accent-color-1: #ff9900; /* Laranja Bitcoin */
+    --accent-color-2: #28a745; /* Verde para lucro */
 }
 
 body.dark-mode {
-    --body-bg: #121212;
-    --card-bg: #1e1e1e;
+    /* Dark Mode */
+    --body-bg: #1e1e1e;
+    --header-bg: #2a2a2a;
+    --header-color: #f0f0f0;
     --text-color: #e0e0e0;
-    --text-color-secondary: #a0a0a0;
-    --border-color: #444;
-    --header-color: #e0e0e0;
-    --accent-color-1: #3498db;
-    --accent-color-2: #2ecc71;
-    --accent-color-3: #1abc9c;
+    --text-color-secondary: #aaaaaa;
+    --border-color: #444444;
+    --indicador-bg: #2a2a2a;
+    --shadow-color: rgba(0, 0, 0, 0.4);
+    --accent-color-1: #ff9900;
+    --accent-color-2: #28a745;
 }
 
-/* --- Estilos Gerais --- */
+/* Base Geral */
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    margin: 0;
-    padding: 20px;
+    font-family: 'Inter', sans-serif;
     background-color: var(--body-bg);
     color: var(--text-color);
+    margin: 0;
+    padding: 20px;
     transition: background-color 0.3s, color 0.3s;
-}
-
-h1 { text-align: center; color: #ff9900; margin-bottom: 20px; font-size: 2.5em; }
-.status-bar { text-align: center; font-size: 0.9em; color: var(--text-color-secondary); margin-bottom: 15px; height: 1.2em; }
-.status-bar b { color: var(--accent-color-2); }
-
-/* --- Botão de Alternância do Tema --- */
-.theme-switch-wrapper { display: flex; align-items: center; justify-content: center; margin-bottom: 25px; }
-.theme-switch-wrapper em { margin-left: 10px; font-size: 1rem; color: var(--text-color-secondary); }
-.theme-switch { position: relative; display: inline-block; width: 60px; height: 34px; }
-.theme-switch input { opacity: 0; width: 0; height: 0; }
-.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; }
-.slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; }
-input:checked + .slider { background-color: #2196F3; }
-input:focus + .slider { box-shadow: 0 0 1px #2196F3; }
-input:checked + .slider:before { transform: translateX(26px); }
-.slider.round { border-radius: 34px; }
-.slider.round:before { border-radius: 50%; }
-
-/* --- Layout Principal (Grid Responsivo) --- */
-.dashboard-container { display: grid; grid-template-columns: repeat(auto-fit, 380px); justify-content: center; gap: 25px; width: 100%; max-width: 1800px; margin: 0 auto; }
-
-/* --- Estilos dos Cards --- */
-.indicador { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); display: flex; flex-direction: column; transition: background-color 0.3s, border-color 0.3s; }
-.indicador h2 { margin-top: 0; margin-bottom: 10px; font-size: 1.1em; color: var(--header-color); border-bottom: 1px solid var(--border-color); padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-.fonte-api { font-size: 0.7em; font-weight: normal; background-color: #e9ecef; color: #495057; padding: 3px 6px; border-radius: 4px; white-space: nowrap; }
-.indicador p { font-size: 1.6em; font-weight: 600; color: var(--accent-color-1); margin: 5px 0; }
-#usdtbrl-price { color: var(--accent-color-3); }
-#fear-greed-value { font-size: 2em; font-weight: bold; margin-bottom: 5px; }
-#fear-greed-classification { font-size: 1.2em; font-style: italic; color: var(--text-color-secondary); margin-bottom: 10px; }
-
-/* --- Sub-indicadores e Notas --- */
-.sub-indicador { margin-top: 15px; padding-top: 10px; border-top: 1px dashed #eaeaea; }
-.sub-indicador:first-of-type { margin-top: 0; padding-top: 0; border-top: none; }
-.sub-indicador p { font-size: 1.2em; font-weight: normal; color: var(--text-color); margin-bottom: 5px; }
-.sub-indicador p strong { color: var(--accent-color-1); font-weight: 600; }
-.sub-indicador span, #mempool-block-height, #mempool-tx-count { font-weight: bold; color: var(--accent-color-2); }
-#mempool-block-height, #mempool-tx-count { font-size: 1.5em; }
-.sub-text { font-size: 0.9em !important; font-weight: normal !important; color: var(--text-color-secondary) !important; margin-top: -5px !important; }
-.update-note { font-size: 0.8em !important; color: var(--text-color-secondary) !important; font-weight: normal !important; text-align: right; margin-top: 10px; margin-bottom: 0; }
-
-/* Calculadoras */
-.calculadora-sats-input-group { margin-bottom: 15px; }
-.calculadora-sats-input-group label { display: block; margin-bottom: 5px; font-weight: 500; color: var(--text-color-secondary); }
-#sats-input { width: calc(100% - 22px); padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 1em; background-color: var(--body-bg); color: var(--text-color); }
-.calculadora-sats-resultado p { font-size: 1.2em; color: var(--text-color); margin-bottom: 8px; }
-.calculadora-sats-resultado strong { color: var(--accent-color-2); }
-
-/* --- Navegação Principal --- */
-.main-header {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.main-nav ul {
-    list-style: none;
-    padding: 0;
-    margin: 20px 0 0 0;
+    min-height: 100vh;
     display: flex;
-    justify-content: center;
-    gap: 20px;
-    border-top: 1px solid var(--border-color);
+    flex-direction: column;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: var(--header-bg);
     border-bottom: 1px solid var(--border-color);
-    padding: 10px 0;
+    box-shadow: 0 2px 4px var(--shadow-color);
+    margin: -20px -20px 20px -20px; /* Remove o padding do body ao redor do header */
+    transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
 }
 
-.main-nav a {
-    text-decoration: none;
+h1 {
+    margin: 0;
+    color: var(--header-color);
+    font-size: 2em;
+    font-weight: 700;
+}
+
+.theme-switch {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.theme-switch input {
+    display: none;
+}
+
+.theme-switch .slider {
+    position: relative;
+    width: 45px;
+    height: 25px;
+    background-color: var(--border-color);
+    border-radius: 25px;
+    transition: 0.4s;
+}
+
+.theme-switch .slider:before {
+    position: absolute;
+    content: "";
+    height: 19px;
+    width: 19px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.4s;
+}
+
+.theme-switch input:checked + .slider {
+    background-color: var(--accent-color-1);
+}
+
+.theme-switch input:checked + .slider:before {
+    transform: translateX(20px);
+}
+
+main {
+    flex-grow: 1; /* Faz o conteúdo principal ocupar o espaço restante */
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+footer {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+    font-size: 0.9em;
     color: var(--text-color-secondary);
-    font-weight: 500;
-    padding: 8px 15px;
-    border-radius: 6px;
-    transition: background-color 0.2s, color 0.2s;
 }
 
-.main-nav a:hover {
-    background-color: #e9ecef;
+footer p {
+    margin: 5px 0;
+}
+
+#last-update-time {
+    font-weight: bold;
+    color: var(--accent-color-1);
+}
+
+/* Dashboard de Indicadores */
+.dashboard-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.indicador {
+    background-color: var(--indicador-bg);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px var(--shadow-color);
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.indicador h3 {
+    margin-top: 0;
+    color: var(--header-color);
+    font-size: 1.2em;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.indicador p {
+    margin: 8px 0;
+    font-size: 1.1em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.indicador span {
+    font-weight: 600;
+    color: var(--accent-color-1);
+}
+
+/* Sats Converter */
+#sats-converter .input-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+}
+
+#sats-converter label {
+    margin-bottom: 5px;
+    font-size: 0.9em;
+    color: var(--text-color-secondary);
+}
+
+#sats-input {
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 1em;
+    background-color: var(--body-bg);
     color: var(--text-color);
+    width: 100%; /* Garante que o input preencha o espaço disponível */
+    box-sizing: border-box; /* Inclui padding e border na largura total */
 }
-
-/* Estilo para o link da página ativa */
-.main-nav a.active {
-    background-color: #ff9900;
-    color: #ffffff;
-}
-
-body.dark-mode .main-nav a:hover {
-    background-color: #333;
-    color: #ffffff;
-}
-
-body.dark-mode .main-nav a.active {
-    background-color: #ff9900;
-    color: #ffffff;
-}
-
 
 /* --- Estilos da Calculadora DCA --- */
 .page-title {
@@ -144,13 +201,16 @@ body.dark-mode .main-nav a.active {
 }
 
 .dca-calculator-container {
-    max-width: 600px;
+    max-width: 600px; /* Garante que o contêiner não seja maior que 600px */
+    width: 100%;     /* Permite encolher abaixo de 600px */
     margin: 0 auto;
+    box-sizing: border-box; /* Inclui padding na largura */
+    padding: 0 10px; /* Padding para não colar nas bordas da tela */
 }
 
 .dca-form {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr; /* Padrão de 2 colunas */
     gap: 20px;
     align-items: end;
     padding-bottom: 20px;
@@ -169,17 +229,19 @@ body.dark-mode .main-nav a.active {
     color: var(--text-color-secondary);
 }
 
-.form-group input, .form-group select {
+.form-group input[type="number"], .form-group select {
     padding: 10px;
     border: 1px solid var(--border-color);
     border-radius: 4px;
     font-size: 1em;
     background-color: var(--body-bg);
     color: var(--text-color);
+    width: 100%; /* Garante que input/select preencham o espaço */
+    box-sizing: border-box; /* Inclui padding e border na largura total */
 }
 
 #dca-simulate-btn {
-    grid-column: 2 / 3; /* Ocupa a segunda coluna */
+    grid-column: 2 / 3;
     padding: 12px;
     font-size: 1em;
     font-weight: bold;
@@ -189,6 +251,8 @@ body.dark-mode .main-nav a.active {
     border-radius: 6px;
     cursor: pointer;
     transition: background-color 0.2s;
+    width: 100%; /* Garante que o botão preencha o espaço */
+    box-sizing: border-box;
 }
 
 #dca-simulate-btn:hover {
@@ -219,6 +283,42 @@ body.dark-mode .main-nav a.active {
     color: #dc3545 !important; /* Vermelho */
 }
 
+/* Estilos para o Seletor de Moeda */
+.currency-selector {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 5px;
+    background-color: var(--body-bg);
+    flex-wrap: nowrap; /* Impede que os radios quebrem linha */
+    box-sizing: border-box;
+}
+
+.currency-selector input[type="radio"] {
+    opacity: 0;
+    position: fixed;
+    width: 0;
+}
+
+.currency-selector label {
+    flex: 1; /* Distribui o espaço igualmente */
+    text-align: center;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+    font-size: 0.9em !important;
+    margin: 0 !important;
+    white-space: nowrap; /* Impede que o texto "BRL (R$)" quebre */
+}
+
+.currency-selector input[type="radio"]:checked + label {
+    background-color: #ff9900;
+    color: #fff;
+    font-weight: bold;
+}
+
 /* --- Estilos do "Melhor Dia para DCA" --- */
 .best-day-finder {
     margin-top: 20px;
@@ -238,6 +338,7 @@ body.dark-mode .main-nav a.active {
     cursor: pointer;
     transition: background-color 0.2s, color 0.2s;
     margin-bottom: 15px;
+    box-sizing: border-box;
 }
 
 body.dark-mode #find-best-dca-day-btn {
@@ -256,55 +357,31 @@ body.dark-mode #find-best-dca-day-btn {
     text-align: center;
 }
 
-/* Estilos para o Seletor de Moeda */
-.currency-selector {
-    display: flex;
-    align-items: center;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    padding: 5px;
-    background-color: var(--body-bg);
-}
+/* --- Media Queries para Responsividade --- */
 
-.currency-selector input[type="radio"] {
-    opacity: 0;
-    position: fixed;
-    width: 0;
-}
-
-.currency-selector label {
-    flex: 1;
-    text-align: center;
-    padding: 5px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s, color 0.2s;
-    font-size: 0.9em !important;
-    margin: 0 !important;
-}
-
-.currency-selector input[type="radio"]:checked + label {
-    background-color: #ff9900;
-    color: #fff;
-    font-weight: bold;
-}
-
-/* --- Media Queries para Telas Pequenas --- */
-@media (max-width: 830px) { .dashboard-container { grid-template-columns: repeat(auto-fit, 350px); } }
-@media (max-width: 420px) { body { padding: 10px; } h1 { font-size: 1.8em; } .dashboard-container { grid-template-columns: 1fr; gap: 15px; } .indicador { padding: 15px; } .indicador p { font-size: 1.4em; } }
-
-/* --- Ajustes Responsivos Genéricos --- */
-@media (max-width: 768px) { /* tablets e celulares em paisagem */
-    .page-title {
-        padding: 0 10px;
-    }
-    .dca-calculator-container {
-        padding: 0 10px; /* Adiciona um padding nas laterais */
+/* Ajustes para telas médias (ex: tablets em retrato ou monitores menores) */
+@media (max-width: 830px) {
+    .dashboard-container {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 15px;
     }
 }
 
-@media (max-width: 500px) { /* Celulares */
-    /* Geral para o painel de indicadores */
+/* Ajustes para telas pequenas (ex: celulares em retrato) */
+@media (max-width: 550px) {
+    body {
+        padding: 10px; /* Reduz o padding geral do corpo em celulares */
+    }
+    header {
+        flex-direction: column; /* Cabeçalho em coluna para telas muito pequenas */
+        padding: 10px;
+        margin: -10px -10px 15px -10px;
+    }
+    h1 {
+        font-size: 1.6em; /* Reduz o tamanho da fonte do título principal */
+        margin-bottom: 10px;
+    }
+
     .dashboard-container {
         grid-template-columns: 1fr; /* Força uma única coluna para todos os indicadores */
         gap: 15px;
@@ -312,32 +389,37 @@ body.dark-mode #find-best-dca-day-btn {
     .indicador {
         padding: 15px;
     }
+    .indicador p {
+        font-size: 1em; /* Ajusta o tamanho da fonte dos textos dentro dos indicadores */
+    }
 
-    /* Específico para o formulário DCA */
+    /* Específico para o formulário DCA em celulares */
+    .dca-calculator-container {
+        padding: 0 5px; /* Reduz ainda mais o padding para telas muito pequenas */
+    }
     .dca-form {
-        grid-template-columns: 1fr; /* Uma única coluna */
-        gap: 15px; /* Reduz o gap para economizar espaço */
+        grid-template-columns: 1fr; /* Força uma única coluna */
+        gap: 15px;
     }
     #dca-simulate-btn {
         grid-column: auto; /* Garante que o botão ocupe sua própria linha */
+        margin-top: 10px; /* Adiciona um pequeno espaçamento */
     }
     .form-group label {
-        font-size: 0.85em; /* Reduz um pouco o tamanho da fonte dos labels */
+        font-size: 0.8em; /* Reduz o tamanho da fonte dos labels */
     }
     .currency-selector label {
         padding: 3px 5px; /* Reduz o padding dos botões de moeda */
-        font-size: 0.8em !important;
+        font-size: 0.75em !important; /* Força um tamanho menor */
     }
     .dca-results p {
-        font-size: 1.1em !important; /* Ajusta o tamanho da fonte dos resultados */
+        font-size: 1em !important; /* Ajusta o tamanho da fonte dos resultados */
     }
     .best-day-finder {
-        padding: 15px 0; /* Ajusta o padding do bloco do melhor dia */
+        padding-top: 15px;
     }
-}
-
-/* Regra para garantir que o contêiner principal da calculadora não vaze */
-.dca-calculator-container {
-    max-width: 600px; /* Já existia, mas é bom reforçar */
-    margin: 0 auto;   /* E centralizar */
+    #find-best-dca-day-btn {
+        padding: 10px; /* Reduz o padding do botão "Melhor Dia" */
+        font-size: 0.9em;
+    }
 }
