@@ -25,7 +25,7 @@ const CRON_SCHEDULE_HIGH_FREQUENCY = `*/${cronIntervalMinutes} * * * *`;
 async function initializeDatabase() {
     try {
         db = await open({
-            filename: './bitpanel.sqlite',
+            filename: path.join(__dirname, process.env.DB_NAME || 'bitpanel.sqlite'),
             driver: sqlite3.Database
         });
         await db.exec(`
