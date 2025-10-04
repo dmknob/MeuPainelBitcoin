@@ -1,6 +1,6 @@
 {
-  "name": "meupainelbitcoin",
-  "version": "1.0.1",
+  "name": "bitpanel",
+  "version": "1.0.2",
   "description": "Um painel de indicadores sobre Bitcoin com backend em Node.js e banco de dados SQLite.",
   "main": "server.js",
   "scripts": {
@@ -11,7 +11,8 @@
     "bitcoin",
     "dashboard",
     "nodejs",
-    "sqlite"
+    "sqlite",
+    "DCA"
   ],
   "author": "",
   "license": "ISC",
